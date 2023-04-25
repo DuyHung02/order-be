@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entity/User';
-import { Product } from './entity/Product';
+import { Product } from './product/entity/Product';
 import { Category } from './entity/Category';
 import { Bill } from './entity/Bill';
 import { BillProduct } from './entity/BillProduct';
@@ -15,6 +15,7 @@ import { HandlebarsAdapter, MailerModule } from '@nest-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ProfileModule } from './profile/profile.module';
 import { Otp } from './auth/entity/Otp';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { Otp } from './auth/entity/Otp';
       inject: [ConfigService],
     }),
     ProfileModule,
+    ProductModule,
   ],
 })
 export class AppModule {}

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CreateUser } from '../../user/dtos/CreateUser';
@@ -42,25 +42,42 @@ export class AuthService {
     return this.userRepository.findOneBy({ email });
   }
 
-  async changePassword(id: number, password: string) {
-    return await this.userRepository.update(id, { password });
-  }
-
-  async sendOtpToMail(email: string) {
+  async otpRegister(email: string) {
     const randomNumber = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
-    await this.mailerService.sendMail({
-      to: email,
-      subject: 'welcome to my website',
-      template: './sendOtp',
-      context: {
-        otp: randomNumber,
-      },
-    });
+    const otp = {
+      email: email,
+      code: randomNumber,
+      typeCode: 'register',
+    };
+    await this.otpRepository.save(otp);
+    setTimeout(() => {
+      this.otpRepository.delete(otp);
+    }, 60000);
     return randomNumber;
   }
 
-  checkOtp(otp: number, confirmOtp: number) {
-    return otp == confirmOtp;
+  async sendOtpRegister(email: string, sub: string) {
+    const otp = await this.otpRegister(email);
+    await this.mailerService.sendMail({
+      to: email,
+      subject: sub,
+      template: './sendOtp',
+      context: {
+        otp: otp,
+      },
+    });
+  }
+
+  async checkOtp(email: string, confirmOtp: number, typeCode: string) {
+    const otp = await this.otpRepository.findOneBy({ email, typeCode });
+    if (!otp) {
+      throw new HttpException('Mã xác thực hết hạn', HttpStatus.GONE);
+    }
+    if (otp.code == confirmOtp) {
+      await this.otpRepository.delete(otp);
+      return HttpStatus.OK;
+    }
+    throw new HttpException('Mã xác thực không đúng', HttpStatus.BAD_REQUEST);
   }
 
   async login(email, password) {

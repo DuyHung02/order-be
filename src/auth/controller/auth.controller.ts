@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
@@ -10,7 +12,7 @@ import {
 import { AuthService } from '../service/auth.service';
 import { AuthOtp } from '../type/AuthOtp';
 import { CreateUser } from '../../user/dtos/CreateUser';
-import { AuthGuard } from '@nestjs/passport';
+import { UserChangePass } from '../../user/dtos/UserChangePass';
 
 @Controller('auth')
 export class AuthController {
@@ -27,15 +29,17 @@ export class AuthController {
   }
 
   @Get('send/otp/:email')
-  sendOtp(@Param('email') email: string) {
-    return this.authService.sendOtpToMail(email);
+  sendOtpRegister(@Param('email') email: string) {
+    const sub = 'Welcome to my website';
+    return this.authService.sendOtpRegister(email, sub);
   }
 
   @Post('check/otp')
   checkOtp(@Body() authOtp: AuthOtp) {
-    const otp = authOtp.otp;
+    const email = authOtp.email;
     const confirmOtp = authOtp.confirmOtp;
-    return this.authService.checkOtp(otp, confirmOtp);
+    const typeCode = authOtp.typeCode;
+    return this.authService.checkOtp(email, confirmOtp, typeCode);
   }
 
   @Post('register')
@@ -50,16 +54,8 @@ export class AuthController {
     return this.authService.login(email, password);
   }
 
-  @Post('change/password')
-  changePassword(@Body() user: CreateUser) {
-    const id = user.id;
-    const password = user.password;
-    return this.authService.changePassword(id, password);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('user')
+  @Get('test')
   getUser() {
-    console.log('user');
+    return HttpStatus.OK;
   }
 }

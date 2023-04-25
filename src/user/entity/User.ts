@@ -40,8 +40,4 @@ export class User {
   @OneToOne(() => Order)
   @JoinColumn()
   order: Order;
-
-  @OneToOne(() => Otp)
-  @JoinColumn()
-  otp: Otp;
 }

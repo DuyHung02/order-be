@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Bill } from './Bill';
 import { Order } from './Order';
-import { Product } from "./Product";
+import { Product } from "../product/entity/Product";
 
 @Entity()
 export class BillProduct {

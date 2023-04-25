@@ -1,4 +1,5 @@
 export class AuthOtp {
-  otp: number;
+  email: string;
+  typeCode: string;
   confirmOtp: number;
 }

@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Otp {
@@ -6,8 +11,11 @@ export class Otp {
   id: number;
 
   @Column()
+  email: string;
+
+  @Column()
   code: number;
 
   @Column()
-  created_at: Date;
+  typeCode: string;
 }
