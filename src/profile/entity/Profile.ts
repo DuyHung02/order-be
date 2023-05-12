@@ -11,12 +11,15 @@ export class Profile {
   @Column()
   last_name: string;
 
-  @Column()
+  @Column({ nullable: true })
   age: number;
 
-  @Column()
+  @Column({ nullable: true })
   gender: string;
 
-  @Column()
+  @Column({ type: 'longtext' })
   avatar: string;
+
+  @Column({type: 'double', default: 0})
+  balance: number;
 }

@@ -13,20 +13,18 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthOtp } from '../../auth/type/AuthOtp';
 import { UserChangePass } from '../dtos/UserChangePass';
 import { UserCheckEmail } from '../dtos/UserCheckEmail';
+import { DepositProfile } from "../../profile/dtos/DepositProfile";
 
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Post(':id/profile')
-  createUserProfile(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() profile: CreateProfile,
-  ) {
-    return this.userService.createUserProfile(id, profile);
+  @Get(':id/profile')
+  createUserProfile(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.createUserProfile(id);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
   @Post(':id/profile/update')
   updateUserProfile(
     @Param('id', ParseIntPipe) id: number,
@@ -35,7 +33,7 @@ export class UserController {
     return this.userService.updateUserProfile(id, profile);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
   @Get('find/user/:id')
   findUserById(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findUserById(id);
@@ -46,6 +44,13 @@ export class UserController {
     console.log(email);
     const sub = 'Change password';
     return this.userService.sendOtpChangePassword(email, sub);
+  }
+
+  @Post('deposit')
+  saveBalance(@Body() depositProfile: DepositProfile) {
+    const profileId = depositProfile.profileId
+    const deposit = depositProfile.deposit
+    return this.userService.saveBalance(profileId, deposit)
   }
 
   @Post('check/otp/change/password')

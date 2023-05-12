@@ -1,17 +1,13 @@
 import {
   Column,
   Entity,
-  JoinColumn,
-  OneToMany,
+  JoinColumn, OneToMany,
   OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Bill } from '../../entity/Bill';
+  PrimaryGeneratedColumn
+} from "typeorm";
 import { Profile } from '../../profile/entity/Profile';
-import { Order } from '../../entity/Order';
-import { Cart } from '../../entity/Cart';
-import { Otp } from '../../auth/entity/Otp';
-
+import { Cart } from '../../cart/entity/Cart';
+import { Order } from "../../order/entity/Order";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -24,10 +20,7 @@ export class User {
   password: string;
 
   @Column()
-  role: number;
-
-  @OneToMany(() => Bill, (bill) => bill.user)
-  bill: Bill[];
+  role: string
 
   @OneToOne(() => Profile)
   @JoinColumn()
@@ -37,7 +30,7 @@ export class User {
   @JoinColumn()
   cart: Cart;
 
-  @OneToOne(() => Order)
-  @JoinColumn()
-  order: Order;
+  @OneToMany(() => Order, (order) => order.user)
+  orders: Order[];
+
 }

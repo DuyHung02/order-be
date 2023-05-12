@@ -1,18 +1,10 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-  Param,
-  ParseIntPipe,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { AuthService } from '../service/auth.service';
 import { AuthOtp } from '../type/AuthOtp';
 import { CreateUser } from '../../user/dtos/CreateUser';
-import { UserChangePass } from '../../user/dtos/UserChangePass';
+import { JwtAuthGuard } from "../jwt/JwtAuthGuard";
+import { Roles } from "../../user/roles.decorator";
+import { Role } from "../../user/entity/role.enum";
 
 @Controller('auth')
 export class AuthController {
@@ -54,8 +46,22 @@ export class AuthController {
     return this.authService.login(email, password);
   }
 
-  @Get('test')
+  @Get('admin')
+  // @Roles(Role.ADMIN)
+  getAdmin() {
+    console.log('admin');
+    return 'Here Admin'
+  }
+
+  @Get('user')
+  // @Roles(Role.USER)
   getUser() {
-    return HttpStatus.OK;
+    return 'Here User'
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('test')
+  getTest(@Req() req) {
+    console.log(req.user);
   }
 }

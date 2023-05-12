@@ -5,4 +5,5 @@ export class CreateProfile {
   age: number;
   gender: string;
   avatar: string;
+  balance: number;
 }

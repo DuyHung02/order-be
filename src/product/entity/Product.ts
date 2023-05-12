@@ -5,9 +5,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Category } from '../../entity/Category';
-import { Cart } from '../../entity/Cart';
-import { BillProduct } from '../../entity/BillProduct';
+import { Category } from '../../category/entity/Category';
+import { CartProduct } from '../../entity/CartProduct';
+import { OrderDetail } from "../../entity/OrderDetail";
 
 @Entity()
 export class Product {
@@ -17,18 +17,22 @@ export class Product {
   @Column()
   name: string;
 
-  @Column()
+  @Column({type: 'double'})
   price: number;
 
-  @Column()
+  @Column({ nullable: true})
   image: string;
 
-  @ManyToOne(() => Category, (category) => category.product)
+  @Column()
+  is_active: boolean;
+
+  @ManyToOne(() => Category, (category) => category.products)
   category: Category;
 
-  @ManyToOne(() => Cart, (cart) => cart.product)
-  cart: Cart;
+  @OneToMany(() => CartProduct, (cartProduct) => cartProduct.product)
+  cart_products: CartProduct;
 
-  @OneToMany(() => BillProduct, (billProduct) => billProduct.product)
-  bill_product: BillProduct[];
+  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.product)
+  order_details: OrderDetail[];
+
 }

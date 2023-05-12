@@ -66,18 +66,27 @@ export class UserService {
     throw new HttpException('Mã xác thực không đúng', HttpStatus.BAD_REQUEST);
   }
 
-  async createUserProfile(id: number, userProfile: CreateProfile) {
+  async createUserProfile(id: number) {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
-      return undefined;
+      throw new HttpException(
+        'Không tìm thấy người dùng',
+        HttpStatus.NOT_FOUND,
+      );
     }
-    const newProfile = this.profileRepository.create(userProfile);
-    user.profile = await this.profileRepository.save(newProfile);
+    user.profile = await this.profileRepository.save({
+      first_name: 'Guest',
+      last_name: `${id}`,
+      age: null,
+      gender: null,
+      avatar:
+        'https://firebasestorage.googleapis.com/v0/b/orderhere-b2bca.appspot.com/o/logoNK.png?alt=media&token=d4efec4a-6e8e-45d8-919b-4991cb63ac31',
+    });
     await this.userRepository.save(user);
     return {
       id: user.id,
       email: user.email,
-      role: user.role,
+      roles: user.role,
       profile: user.profile,
     };
   }
@@ -85,13 +94,22 @@ export class UserService {
   async updateUserProfile(id: number, userProfile: CreateProfile) {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['profile'],
+      relations: ['profile', 'cart'],
     });
     if (!user) {
       return undefined;
     }
     const idProfile = user.profile.id;
-    return await this.profileRepository.update(idProfile, { ...userProfile });
+    await this.profileRepository.update(idProfile, { ...userProfile });
+    user.profile = userProfile;
+    return user;
+  }
+
+  async saveBalance(profileId: number, deposit: number) {
+    const profile = await this.profileRepository.findOneBy({id: profileId})
+    profile.balance = profile.balance + deposit;
+    await this.profileRepository.save(profile)
+    return HttpStatus.OK
   }
 
   async findUserById(id: number) {
