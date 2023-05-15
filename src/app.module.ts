@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entity/User';
@@ -17,12 +17,10 @@ import { CategoryModule } from './category/category.module';
 import { Cart } from './cart/entity/Cart';
 import { CartProduct } from './entity/CartProduct';
 import { CartModule } from './cart/cart.module';
-import { RolesGuard } from "./user/roles.guard";
-import { APP_GUARD } from "@nestjs/core";
 import { JwtModule } from "@nestjs/jwt";
 import { OrderModule } from "./order/order.module";
 import { OrderDetail } from "./entity/OrderDetail";
-import { AuthMiddleware } from "./auth/auth.middleware";
+import { Role } from "./user/entity/Role";
 
 @Module({
   imports: [
@@ -34,6 +32,7 @@ import { AuthMiddleware } from "./auth/auth.middleware";
     AuthModule,
     OrderModule,
     JwtModule.register({}),
+    TypeOrmModule.forFeature([User]),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',
@@ -51,6 +50,7 @@ import { AuthMiddleware } from "./auth/auth.middleware";
         OrderDetail,
         Profile,
         Otp,
+        Role,
       ],
       synchronize: true,
     }),
@@ -82,17 +82,7 @@ import { AuthMiddleware } from "./auth/auth.middleware";
       inject: [ConfigService],
     }),
   ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
-  ],
+  providers: [],
 })
 export class AppModule{
-  // configure(consumer: MiddlewareConsumer) {
-  //   consumer
-  //     .apply(AuthMiddleware)
-  //     .forRoutes('*')
-  // }
 }

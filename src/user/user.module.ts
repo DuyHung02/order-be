@@ -8,7 +8,8 @@ import { Otp } from '../auth/entity/Otp';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Profile, Otp])],
-  providers: [UserService],
+  providers: [UserService,
+  ],
   controllers: [UserController],
 })
 export class UserModule {}

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { CreateUser } from "../../user/dtos/CreateUser";
@@ -8,7 +8,8 @@ import { Repository } from "typeorm";
 import { MailerService } from "@nest-modules/mailer";
 import { Otp } from "../entity/Otp";
 import { comparePassword, encodePassword } from "../utils/bcrypt";
-import { Role } from "../../entity/Role";
+import { jwtConstants } from "../auth.constants";
+import { Role } from "../../user/entity/Role";
 
 @Injectable()
 export class AuthService {
@@ -17,28 +18,49 @@ export class AuthService {
     private configService: ConfigService,
     private mailerService: MailerService,
     @InjectRepository(User) private userRepository: Repository<User>,
-    @InjectRepository(Role) private roleRepository: Repository<Role>,
     @InjectRepository(Otp) private otpRepository: Repository<Otp>,
-  ) {}
+    @InjectRepository(Role) private roleRepository: Repository<Role>
+  ) {
+  }
 
-  async register(user: CreateUser) {
-    const role = 'user'
-    const password = await encodePassword(user.password);
-    const newUser = await this.userRepository.save({
-      ...user,
-      password: password,
-      role: role,
-    });
+  async signIn(email: string, pass: string): Promise<any> {
+    const user = await this.userRepository.findOne({ where: { email: email } });
+    const matched = comparePassword(pass, user.password);
+    if (!matched) {
+      throw new UnauthorizedException("Sai mật khẩu");
+    }
+    const payload = { email: user.email, sub: user.id };
     return {
-      ...newUser,
-      token: await this.signJwtToken(newUser.id, newUser.email, role)
+      access_token: await this.jwtService.signAsync(payload, {
+        secret: jwtConstants.secret
+        , expiresIn: "1h"
+      })
     };
   }
 
+  async register(email: string, password: string) {
+    const hasPassword = await encodePassword(password);
+    const newUser = await this.userRepository.save({
+      email: email,
+      password: hasPassword,
+    });
+    await this.roleRepository.save({
+      name: 'user',
+      user: newUser,
+    })
+    const payload = {email: newUser.email, sub: newUser.id}
+    return {
+      access_token: await this.jwtService.signAsync(payload, {
+        secret: jwtConstants.secret,
+        expiresIn: '1h'
+      })
+    }
+  }
+
   async checkEmail(email: string) {
-    const user = await this.userRepository.findOneBy({ email });
+    const user = await this.userRepository.findOneBy({ email: email });
     if (user) {
-      throw new HttpException('Tài khoản đã tồn tại', HttpStatus.BAD_REQUEST);
+      throw new HttpException("Tài khoản đã tồn tại", HttpStatus.BAD_REQUEST);
     }
     return false;
   }
@@ -48,7 +70,7 @@ export class AuthService {
   }
 
   findUserById(id: number) {
-    return this.userRepository.findOneBy({ id })
+    return this.userRepository.findOneBy({ id });
   }
 
   async otpRegister(email: string) {
@@ -56,7 +78,7 @@ export class AuthService {
     const otp = {
       email: email,
       code: randomNumber,
-      typeCode: 'register',
+      typeCode: "register"
     };
     await this.otpRepository.save(otp);
     setTimeout(() => {
@@ -70,57 +92,22 @@ export class AuthService {
     await this.mailerService.sendMail({
       to: email,
       subject: sub,
-      template: './sendOtp',
+      template: "./sendOtp",
       context: {
-        otp: otp,
-      },
+        otp: otp
+      }
     });
   }
 
   async checkOtp(email: string, confirmOtp: number, typeCode: string) {
     const otp = await this.otpRepository.findOneBy({ email, typeCode });
     if (!otp) {
-      throw new HttpException('Mã xác thực hết hạn', HttpStatus.GONE);
+      throw new HttpException("Mã xác thực hết hạn", HttpStatus.GONE);
     }
     if (otp.code == confirmOtp) {
       await this.otpRepository.delete(otp);
       return HttpStatus.OK;
     }
-    throw new HttpException('Mã xác thực không đúng', HttpStatus.BAD_REQUEST);
-  }
-
-  async login(email, password) {
-    const user = await this.userRepository.findOne({
-      where: { email },
-      relations: ['profile', 'cart'],
-    });
-    if (!user) {
-      throw new HttpException('Không tìm thấy tài khoản', HttpStatus.NOT_FOUND);
-    }
-    const matched = comparePassword(password, user.password);
-    if (matched) {
-      return {
-        ...user,
-        token: await this.signJwtToken(user.id, user.email, user.role)
-      };
-    } else {
-      throw new HttpException('Mật khẩu không đúng', HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  async signJwtToken(
-    id: number,
-    email: string,
-    role: string
-  ) {
-    const payload = {
-      id: id,
-      email: email,
-      role: role
-    };
-    return await this.jwtService.signAsync(payload, {
-      expiresIn: '30m',
-      secret: this.configService.get('JWT_SECRET'),
-    })
+    throw new HttpException("Mã xác thực không đúng", HttpStatus.BAD_REQUEST);
   }
 }

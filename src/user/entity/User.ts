@@ -8,6 +8,7 @@ import {
 import { Profile } from '../../profile/entity/Profile';
 import { Cart } from '../../cart/entity/Cart';
 import { Order } from "../../order/entity/Order";
+import { Role } from "./Role";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -19,8 +20,8 @@ export class User {
   @Column()
   password: string;
 
-  @Column()
-  role: string
+  @OneToMany(() => Role, (role) => role.user)
+  roles: Role[]
 
   @OneToOne(() => Profile)
   @JoinColumn()

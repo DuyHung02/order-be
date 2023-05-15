@@ -3,45 +3,28 @@ import {
   Controller,
   Get,
   Param,
-  ParseIntPipe,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+  Post, Request
+} from "@nestjs/common";
 import { UserService } from '../service/user.service';
-import { CreateProfile } from '../../profile/dtos/CreateProfile';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthOtp } from '../../auth/type/AuthOtp';
 import { UserChangePass } from '../dtos/UserChangePass';
 import { UserCheckEmail } from '../dtos/UserCheckEmail';
 import { DepositProfile } from "../../profile/dtos/DepositProfile";
+import { Roles } from "../roles.decorator";
+import { Role } from "../entity/role.enum";
 
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Get(':id/profile')
-  createUserProfile(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.createUserProfile(id);
-  }
-
-  // @UseGuards(AuthGuard('jwt'))
-  @Post(':id/profile/update')
-  updateUserProfile(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() profile: CreateProfile,
-  ) {
-    return this.userService.updateUserProfile(id, profile);
-  }
-
-  // @UseGuards(AuthGuard('jwt'))
-  @Get('find/user/:id')
-  findUserById(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.findUserById(id);
+  @Get('find')
+  findUserById(@Request() req) {
+    const userId = req.user.id
+    return this.userService.findUserById(userId);
   }
 
   @Get('send/otp/:email')
   sendOtpChangePass(@Param('email') email: string) {
-    console.log(email);
     const sub = 'Change password';
     return this.userService.sendOtpChangePassword(email, sub);
   }
@@ -76,5 +59,17 @@ export class UserController {
     const userId = user.id;
     const email = user.email;
     return this.userService.checkUserMail(userId, email);
+  }
+
+  @Roles(Role.ADMIN)
+  @Get('admin')
+  getAdmin() {
+    return 'Here admin'
+  }
+
+  @Roles(Role.USER)
+  @Get('user')
+  getUser() {
+    return 'Here user'
   }
 }

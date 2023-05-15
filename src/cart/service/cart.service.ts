@@ -7,6 +7,7 @@ import { CreateUser } from "../../user/dtos/CreateUser";
 import { Product } from "../../product/entity/Product";
 import { CartProduct } from "../../entity/CartProduct";
 import { IdCartProduct } from "../dtos/IdCartProduct";
+import { CreateCart } from "../dtos/CreateCart";
 
 @Injectable()
 export class CartService {
@@ -19,20 +20,15 @@ export class CartService {
   ) {
   }
 
-  async createCart(userId: CreateUser) {
-    const id = userId.id;
-    const user = await this.userRepository.findOne({
-      where: { id }
-    });
+  async createCart(userId: number, cart: CreateCart) {
+    const user = await this.userRepository.findOneBy({id: userId})
     if (!user) {
       throw new HttpException(
-        "Không tìm thấy người dùng",
-        HttpStatus.BAD_REQUEST
-      );
+        "Không tìm thấy người dùng", HttpStatus.BAD_REQUEST);
     }
-    const cart = await this.cartRepository.save({})
     user.cart = await this.cartRepository.save(cart);
-    return await this.userRepository.save(user);
+    await this.userRepository.save(user)
+    return HttpStatus.OK
   }
 
   async addProductToCart(idCartProduct: IdCartProduct) {

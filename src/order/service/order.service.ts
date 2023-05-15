@@ -166,7 +166,9 @@ export class OrderService {
 
   async checkUserAdmin(userId: number) {
     const user = await this.userRepository.findOne({
-      where: { id: userId, role: "admin" },
+      where: { id: userId,
+        // role: "admin"
+      },
       relations: ["profile"]
     });
     if (!user) {

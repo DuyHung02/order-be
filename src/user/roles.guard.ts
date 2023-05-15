@@ -6,8 +6,8 @@ import { Role } from "./entity/role.enum";
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
-  canActivate(context: ExecutionContext): boolean {
-    const requireRoles = this.reflector.getAllAndOverride<Role[]>('roles', [
+  async canActivate(context: ExecutionContext) {
+    const requireRoles = this.reflector.getAllAndOverride<Role[]>('ROLES_KEY', [
       context.getHandler(),
       context.getClass(),
     ]);
@@ -15,13 +15,7 @@ export class RolesGuard implements CanActivate {
       return true;
     }
     const { user } = context.switchToHttp().getRequest();
-    console.log(user);
-
-    return requireRoles.some((role) => user.role.includes(role));
+    // const test = requireRoles.some((role) => user.roles?.includes(role));
+    return requireRoles.some((role) => user.roles?.some(userRole => userRole.name === role));
   }
 }
-
-// const user: { role: Role.ADMIN; email: string } = {
-//   email: 'Hung',
-//   role: Role.ADMIN,
-// };
