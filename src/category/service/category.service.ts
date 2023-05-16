@@ -15,14 +15,19 @@ export class CategoryService {
     return this.categoryRepository.find();
   }
 
-  async createCategory(category: CreateCategory) {
-    await this.categoryRepository.create(category);
-    return HttpStatus.OK;
+  findCategoryById(categoryId: number) {
+    return this.categoryRepository.findOneBy({id: categoryId})
   }
 
-  async updateCategory(id: number, category: CreateCategory) {
-    await this.categoryRepository.update(id, category);
-    return HttpStatus.OK;
+  async createCategory(category: CreateCategory) {
+    await this.categoryRepository.save(category);
+    return this.findAllCategory()
+  }
+
+  async updateCategory(category: CreateCategory) {
+    const categoryId = category.id
+    await this.categoryRepository.update(categoryId, category);
+    return this.findAllCategory()
   }
 
   async deleteCategory(id: number) {
