@@ -23,6 +23,12 @@ export class UserController {
     return this.userService.findUserById(userId);
   }
 
+  @Get('find/role')
+  findUserRole(@Request() req) {
+    const userId = req.user.id
+    return this.userService.findUserRole(userId)
+  }
+
   @Get('send/otp/:email')
   sendOtpChangePass(@Param('email') email: string) {
     const sub = 'Change password';
