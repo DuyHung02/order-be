@@ -25,6 +25,9 @@ export class AuthService {
 
   async signIn(email: string, pass: string): Promise<any> {
     const user = await this.userRepository.findOne({ where: { email: email } });
+    if (!user) {
+      throw new HttpException('Người dùng không tồn tại', HttpStatus.BAD_REQUEST)
+    }
     const matched = comparePassword(pass, user.password);
     if (!matched) {
       throw new UnauthorizedException("Sai mật khẩu");

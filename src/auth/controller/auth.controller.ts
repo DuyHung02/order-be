@@ -6,8 +6,6 @@ import { Roles } from "../../user/roles.decorator";
 import { Role } from "../../user/entity/role.enum";
 import { SignInDto } from "../dtos/SignInDto";
 import { SkipAuth } from "../auth.decorator";
-import { AuthGuard } from "../auth.guard";
-import { RolesGuard } from "../../user/roles.guard";
 
 @Controller('auth')
 export class AuthController {

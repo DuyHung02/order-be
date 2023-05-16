@@ -12,11 +12,13 @@ import { UserCheckEmail } from '../dtos/UserCheckEmail';
 import { DepositProfile } from "../../profile/dtos/DepositProfile";
 import { Roles } from "../roles.decorator";
 import { Role } from "../entity/role.enum";
+import { SkipAuth } from "../../auth/auth.decorator";
 
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @SkipAuth()
   @Get('find')
   findUserById(@Request() req) {
     const userId = req.user.id

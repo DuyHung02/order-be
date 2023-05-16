@@ -83,7 +83,8 @@ export class UserService {
   }
 
   async findUserRole(userId: number) {
-    return await this.userRepository.findOne({ where: { id: userId }, relations: ["roles"] });
+    return await this.userRepository.findOne({ where: { id: userId },
+      relations: ["roles", 'profile'] });
   }
 
   async changePassword(
