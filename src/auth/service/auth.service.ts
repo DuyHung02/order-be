@@ -63,9 +63,9 @@ export class AuthService {
   async checkEmail(email: string) {
     const user = await this.userRepository.findOneBy({ email: email });
     if (user) {
-      throw new HttpException("Tài khoản đã tồn tại", HttpStatus.BAD_REQUEST);
+      throw new HttpException("Email đã tồn tại", HttpStatus.BAD_REQUEST);
     }
-    return false;
+    return true
   }
 
   findUserByEmail(email: string) {
@@ -105,7 +105,7 @@ export class AuthService {
   async checkOtp(email: string, confirmOtp: number, typeCode: string) {
     const otp = await this.otpRepository.findOneBy({ email, typeCode });
     if (!otp) {
-      throw new HttpException("Mã xác thực hết hạn", HttpStatus.GONE);
+      throw new HttpException("Mã xác thực hết hạn", HttpStatus.BAD_REQUEST);
     }
     if (otp.code == confirmOtp) {
       await this.otpRepository.delete(otp);

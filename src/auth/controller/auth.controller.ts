@@ -17,11 +17,6 @@ export class AuthController {
     return this.authService.checkEmail(email);
   }
 
-  @Get('find/user/:email')
-  findUserByEmail(@Param('email') email: string) {
-    return this.authService.findUserByEmail(email);
-  }
-
   @SkipAuth()
   @Get('send/otp/:email')
   sendOtpRegister(@Param('email') email: string) {
@@ -37,6 +32,13 @@ export class AuthController {
     const typeCode = authOtp.typeCode;
     return this.authService.checkOtp(email, confirmOtp, typeCode);
   }
+
+  @Get('find/user/:email')
+  findUserByEmail(@Param('email') email: string) {
+    return this.authService.findUserByEmail(email);
+  }
+
+
 
   @SkipAuth()
   @Post('register')
