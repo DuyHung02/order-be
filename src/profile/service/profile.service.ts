@@ -93,7 +93,6 @@ export class ProfileService {
     if (!user) {
       throw new HttpException('Không tìm thấy người dùng', HttpStatus.BAD_REQUEST)
     }
-    console.log(user);
     const profile = user.profile;
     profile.balance = profile.balance + deposit;
     await this.profileRepository.save(profile);
