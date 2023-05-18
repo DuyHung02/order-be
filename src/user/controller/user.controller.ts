@@ -36,13 +36,6 @@ export class UserController {
     return this.userService.sendOtpChangePassword(email, sub);
   }
 
-  @Post('deposit')
-  saveBalance(@Body() depositProfile: DepositProfile) {
-    const profileId = depositProfile.profileId
-    const deposit = depositProfile.deposit
-    return this.userService.saveBalance(profileId, deposit)
-  }
-
   @Post('check/otp/change/password')
   checkOtpChangePassword(@Body() authOtp: AuthOtp) {
     const email = authOtp.email;

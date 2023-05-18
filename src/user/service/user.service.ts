@@ -68,13 +68,6 @@ export class UserService {
     throw new HttpException("Mã xác thực không đúng", HttpStatus.BAD_REQUEST);
   }
 
-  async saveBalance(profileId: number, deposit: number) {
-    const profile = await this.profileRepository.findOneBy({ id: profileId });
-    profile.balance = profile.balance + deposit;
-    await this.profileRepository.save(profile);
-    return HttpStatus.OK;
-  }
-
   async findUserById(id: number) {
     return await this.userRepository.findOne({
       where: { id },
