@@ -18,7 +18,6 @@ import { SkipAuth } from "../../auth/auth.decorator";
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @SkipAuth()
   @Get('find')
   findUserById(@Request() req) {
     const userId = req.user.id
