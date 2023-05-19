@@ -1,35 +1,60 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Request } from "@nestjs/common";
 import { OrderService } from "../service/order.service";
 import { IdCartProduct } from "../../cart/dtos/IdCartProduct";
 import { OrderUser } from "../dtos/OrderUser";
+import { Roles } from "../../user/roles.decorator";
+import { Role } from "../../user/entity/role.enum";
+import { OrderCancel } from "../dtos/OrderCancel";
 
 @Controller('orders')
 export class OrderController {
   constructor(private orderService: OrderService) {
   }
+
+  @Roles(Role.ADMIN)
   @Get('all')
   getAllOrder() {
     return this.orderService.getAllOrder()
   }
 
+  @Roles(Role.ADMIN)
   @Get('news')
   getNewOrder() {
     return this.orderService.getNewOrder()
   }
 
+  @Roles(Role.ADMIN)
   @Get('waiting')
   getOrderWaiting() {
     return this.orderService.getOrderWaiting()
   }
 
+  @Roles(Role.ADMIN)
   @Get('done')
   getOrderDone() {
     return this.orderService.getOrderDone()
   }
 
+  @Roles(Role.ADMIN)
   @Get('cancel')
   getCancelOrder() {
     return this.orderService.getCancelOrder()
+  }
+
+  @Roles(Role.ADMIN)
+  @Post('confirm')
+  confirmOrder(@Request() req, @Body() orderUser: OrderUser) {
+    const orderId = orderUser.orderId
+    const userId = req.user.id
+    return this.orderService.confirmOrder(orderId, userId)
+  }
+
+  @Roles(Role.ADMIN)
+  @Post('cancel')
+  cancelOrder(@Body() orderCancel: OrderCancel) {
+    const orderId = orderCancel.orderId
+    const reason = orderCancel.reason
+    return this.orderService.cancelOrder(orderId, reason)
   }
 
   @Post('detail')
@@ -42,20 +67,6 @@ export class OrderController {
   createOrder(@Body() idCartProduct: IdCartProduct) {
     const cartId = idCartProduct.cartId
     return this.orderService.createOrder(cartId)
-  }
-
-  @Post('confirm')
-  confirmOrder(@Body() orderUser: OrderUser) {
-    const orderId = orderUser.orderId
-    const userId = orderUser.userId
-    return this.orderService.confirmOrder(orderId, userId)
-  }
-
-  @Post('cancel')
-  cancelOrder(@Body() orderUser: OrderUser) {
-    const orderId = orderUser.orderId
-    const userId = orderUser.userId
-    return this.orderService.cancelOrder(orderId, userId)
   }
 
   @Post('user')

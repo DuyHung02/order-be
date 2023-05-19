@@ -16,6 +16,9 @@ export class Order {
   @Column({default: 0})
   total_price: number;
 
+  @Column({nullable: true})
+  reason_cancel: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
   create_at: Date;
 

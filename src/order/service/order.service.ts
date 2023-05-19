@@ -21,23 +21,35 @@ export class OrderService {
   }
 
   async getAllOrder() {
-    return await this.orderRepository.find();
+    return await this.orderRepository.find({ relations: ["user", "user.profile"] });
   }
 
   async getNewOrder() {
-    return await this.orderRepository.find({ where: { status: "new" } });
+    return await this.orderRepository.find({
+      where: { status: "new" },
+      relations: ["user", "user.profile"]
+    });
   }
 
   async getOrderWaiting() {
-    return await this.orderRepository.find({ where: { status: "waiting" } });
+    return await this.orderRepository.find({
+      where: { status: "waiting" },
+      relations: ["user", "user.profile"]
+    });
   }
 
   async getOrderDone() {
-    return await this.orderRepository.find({ where: { status: "done" } });
+    return await this.orderRepository.find({
+      where: { status: "done" },
+      relations: ["user", "user.profile"]
+    });
   }
 
   async getCancelOrder() {
-    return await this.orderRepository.find({ where: { status: "cancel" } });
+    return await this.orderRepository.find({
+      where: { status: "cancel" },
+      relations: ["user", "user.profile"]
+    });
   }
 
   async getUserOrder(userId: number) {
@@ -129,52 +141,42 @@ export class OrderService {
   }
 
   async confirmOrder(orderId: number, userId: number) {
-    const user = await this.checkUserAdmin(userId);
-    const profile = user.profile;
     const order = await this.orderRepository.findOneBy({ id: orderId });
     if (!order) {
       throw new HttpException("Không tim thấy đơn hàng", HttpStatus.NOT_FOUND);
     }
-    if (user) {
-      if (order.status == "new") {
-        order.status = "waiting";
-        await this.orderRepository.save(order);
-        return this.getNewOrder();
-      } else if (order.status == "waiting") {
-        order.status = "done";
-        order.complete_at = new Date();
-        profile.balance = profile.balance + order.total_price;
-        await this.profileRepository.save(profile);
-        await this.orderRepository.save(order);
-        return this.getOrderWaiting();
-      }
-    }
-  }
-
-  async cancelOrder(orderId: number, userId: number) {
-    const user = this.checkUserAdmin(userId);
-    const order = await this.orderRepository.findOneBy({ id: orderId });
-    if (!order) {
-      throw new HttpException("Không tim thấy đơn hàng", HttpStatus.NOT_FOUND);
-    }
-    if (user) {
-      order.status = "cancel";
+    if (order.status == "new") {
+      order.status = "waiting";
       await this.orderRepository.save(order);
       return this.getNewOrder();
+    } else if (order.status == "waiting") {
+      order.status = "done";
+      order.complete_at = new Date();
+      await this.toPay(userId, order.total_price);
+      await this.orderRepository.save(order);
+      return this.getOrderWaiting();
     }
   }
 
-  async checkUserAdmin(userId: number) {
+  async toPay(userId: number, totalPrice: number) {
     const user = await this.userRepository.findOne({
-      where: { id: userId,
-        // role: "admin"
-      },
+      where: { id: userId },
       relations: ["profile"]
     });
-    if (!user) {
-      throw new HttpException("Xác nhận thất bại", HttpStatus.BAD_REQUEST);
+    const profile = user.profile;
+    profile.balance = profile.balance + totalPrice;
+    await this.profileRepository.save(profile);
+  }
+
+  async cancelOrder(orderId: number, reason: string) {
+    const order = await this.orderRepository.findOneBy({ id: orderId });
+    if (!order) {
+      throw new HttpException("Không tim thấy đơn hàng", HttpStatus.NOT_FOUND);
     }
-    return user;
+    order.status = "cancel";
+    order.reason_cancel = reason;
+    await this.orderRepository.save(order);
+    return HttpStatus.OK
   }
 
   async getOrderDetail(orderId: number) {
