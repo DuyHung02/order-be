@@ -1,15 +1,8 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from "@nestjs/common";
 import { ProductService } from "../service/product.service";
 import { CreateProduct } from "../dtos/CreateProduct";
+import { Roles } from "../../user/roles.decorator";
+import { Role } from "../../user/entity/role.enum";
 
 @Controller("products")
 export class ProductController {
@@ -26,18 +19,30 @@ export class ProductController {
     return this.productService.findProductById(id);
   }
 
+  @Get('find/all/active/off')
+  findProductsActiveOff() {
+    return this.productService.findProductsActiveOff()
+  }
+
+  @Get('find/all/active/on')
+  findProductsActiveOn() {
+    return this.productService.findProductsActiveOn()
+  }
+
+  @Roles(Role.ADMIN)
   @Post("create")
   createProduct(@Body() product: CreateProduct) {
     return this.productService.createProduct(product);
   }
 
+  @Roles(Role.ADMIN)
   @Post("update")
   updateProduct(
-    @Body() product: CreateProduct
-  ) {
+    @Body() product: CreateProduct) {
     return this.productService.updateProduct(product);
   }
 
+  @Roles(Role.ADMIN)
   @Delete("delete/:id")
   deleteProduct(@Param("id", ParseIntPipe) id: number) {
     return this.productService.deleteProduct(id);

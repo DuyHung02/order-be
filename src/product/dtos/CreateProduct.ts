@@ -5,6 +5,7 @@ export class CreateProduct {
   name: string;
   price: number;
   image: string;
+  is_active: boolean;
   categoryId: number;
   category: Category
 }

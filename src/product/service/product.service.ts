@@ -16,7 +16,20 @@ export class ProductService {
   findProducts() {
     return this.productRepository.find({
       relations: ['category'],
-      // where: { is_active: true },
+    });
+  }
+
+  findProductsActiveOff() {
+    return this.productRepository.find({
+      where: {is_active: false},
+      relations: ['category'],
+    });
+  }
+
+  findProductsActiveOn() {
+    return this.productRepository.find({
+      where: {is_active: true},
+      relations: ['category'],
     });
   }
 
@@ -46,7 +59,7 @@ export class ProductService {
       price: product.price,
       image: product.image,
       category: category,
-      is_active: true,
+      is_active: product.is_active,
     };
     await this.productRepository.save(newProduct);
     return HttpStatus.OK;
@@ -68,7 +81,8 @@ export class ProductService {
     const categoryId = product.categoryId
     product.category = await this.categoryRepository.findOneBy({ id: categoryId })
     delete product.categoryId
-    await this.productRepository.update(id, { ...product });
+    console.log(product);
+    await this.productRepository.save(product);
     return HttpStatus.OK;
   }
 
