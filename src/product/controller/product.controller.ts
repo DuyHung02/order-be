@@ -3,6 +3,7 @@ import { ProductService } from "../service/product.service";
 import { CreateProduct } from "../dtos/CreateProduct";
 import { Roles } from "../../user/roles.decorator";
 import { Role } from "../../user/entity/role.enum";
+import { SkipAuth } from "../../auth/auth.decorator";
 
 @Controller("products")
 export class ProductController {
@@ -24,6 +25,7 @@ export class ProductController {
     return this.productService.findProductsActiveOff()
   }
 
+  @SkipAuth()
   @Get('find/all/active/on')
   findProductsActiveOn() {
     return this.productService.findProductsActiveOn()

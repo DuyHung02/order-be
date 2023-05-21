@@ -77,13 +77,12 @@ export class OrderService {
     return await this.orderRepository.find({ where: { user, status: "cancel" } });
   }
 
-  async createOrder(cartId: number) {
-    const cart = await this.cartRepository.findOneBy({ id: cartId });
-    if (!cart) {
-      throw new HttpException("Không tìm thấy giỏ hàng", HttpStatus.BAD_REQUEST);
-    }
-    const user = await this.userRepository.findOne({ where: { cart: cart }, relations: ["profile"] });
-    const profile = user.profile;
+  async createOrder(userId: number) {
+    const user = await this.userRepository.findOne({where: {id: userId},
+    relations: ['cart', 'profile']
+    })
+    const cart = user.cart
+    const profile = user.profile
     const cartProducts = await this.cartProductRepository.find({
       where: { cart: cart },
       relations: ["product"]

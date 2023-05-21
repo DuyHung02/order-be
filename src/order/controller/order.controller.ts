@@ -63,10 +63,10 @@ export class OrderController {
     return this.orderService.getOrderDetail(orderId)
   }
 
-  @Post('create')
-  createOrder(@Body() idCartProduct: IdCartProduct) {
-    const cartId = idCartProduct.cartId
-    return this.orderService.createOrder(cartId)
+  @Get('create')
+  createOrder(@Request() req) {
+    const userId = req.user.id
+    return this.orderService.createOrder(userId)
   }
 
   @Post('user')

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request } from "@nestjs/common";
+import { Body, Controller, Get, Post, Request } from "@nestjs/common";
 import { CartService } from "../service/cart.service";
 import { IdCartProduct } from "../dtos/IdCartProduct";
 import { CreateCart } from "../dtos/CreateCart";
@@ -15,17 +15,22 @@ export class CartController {
   }
 
   @Post("add/product")
-  addProductToCart(@Body() idCartProduct: IdCartProduct) {
-    return this.cartService.addProductToCart(idCartProduct);
+  addProductToCart(@Body() idCartProduct: IdCartProduct, @Request() req) {
+    const userId = req.user.id;
+    const productId = idCartProduct.productId
+    return this.cartService.addProductToCart(userId, productId);
   }
 
   @Post("delete/product")
-  removeProductFrom(@Body() idCartProduct: IdCartProduct) {
-    return this.cartService.removeProductFromCart(idCartProduct);
+  removeProductFrom(@Body() idCartProduct: IdCartProduct, @Request() req) {
+    const userId = req.user.id;
+    const productId = idCartProduct.productId
+    return this.cartService.removeProductFromCart(userId, productId);
   }
 
-  @Post("get/products")
-  getProducts(@Body() cartId: IdCartProduct) {
-    return this.cartService.getProducts(cartId);
+  @Get("get/cart")
+  getCartUser(@Request() req) {
+    const userId = req.user.id
+    return this.cartService.getCart(userId);
   }
 }

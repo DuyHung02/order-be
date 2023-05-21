@@ -21,31 +21,30 @@ export class CartService {
   }
 
   async createCart(userId: number, cart: CreateCart) {
-    const user = await this.userRepository.findOneBy({id: userId})
+    const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) {
       throw new HttpException(
         "Không tìm thấy người dùng", HttpStatus.BAD_REQUEST);
     }
     user.cart = await this.cartRepository.save(cart);
-    await this.userRepository.save(user)
-    return HttpStatus.OK
+    await this.userRepository.save(user);
+    return HttpStatus.OK;
   }
 
-  async addProductToCart(idCartProduct: IdCartProduct) {
-    const cartId = idCartProduct.cartId;
-    const productId = idCartProduct.productId;
-    if (!cartId) {
-      throw new HttpException("Vui lòng đăng nhập", HttpStatus.BAD_REQUEST);
-    }
-    const cart = await this.cartRepository.findOneBy({ id: cartId });
+  async addProductToCart(userId: number, productId: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ["cart"]
+    });
+    const cart = user.cart;
     const product = await this.productRepository.findOneBy({ id: productId });
     const cartProduct = await this.cartProductRepository.findOne({
-      where: { cart, product },
-      relations: ['product']
+      where: { cart: cart, product: product },
+      relations: ["product"]
     });
     if (cartProduct) {
       const quantity = cartProduct.quantity++;
-      const totalPriceProduct = quantity * cartProduct.product.price
+      const totalPriceProduct = quantity * cartProduct.product.price;
       await this.cartProductRepository.save({
         total_price_Product: totalPriceProduct,
         ...cartProduct
@@ -58,7 +57,24 @@ export class CartService {
         total_price_Product: product.price
       });
     }
-    return this.updateCart(cart)
+    return this.updateCart(cart);
+  }
+
+  async removeProductFromCart(userId: number, productId: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ["cart"]
+    });
+    const cart = user.cart;
+    const product = await this.productRepository.findOneBy({ id: productId });
+    const cartProduct = await this.cartProductRepository.findOneBy({ cart: cart, product });
+    if (cartProduct.quantity == 1) {
+      await this.cartProductRepository.remove(cartProduct);
+    } else {
+      cartProduct.quantity--;
+      await this.cartProductRepository.save(cartProduct);
+    }
+    return this.updateCart(cart);
   }
 
   async updateCart(cart: Cart) {
@@ -88,29 +104,15 @@ export class CartService {
     );
   }
 
-  async totalPriceProductOfCartProduct(cartProduct: CartProduct) {
-  }
-
-  async removeProductFromCart(idCartProduct: IdCartProduct) {
-    const cartId = idCartProduct.cartId;
-    const productId = idCartProduct.productId;
-    const cart = await this.cartRepository.findOneBy({ id: cartId });
-    const product = await this.productRepository.findOneBy({ id: productId });
-    const cartProduct = await this.cartProductRepository.findOneBy({ cart, product });
-    if (cartProduct.quantity == 1) {
-      await this.cartProductRepository.remove(cartProduct);
-    } else {
-      cartProduct.quantity--;
-      await this.cartProductRepository.save(cartProduct);
-    }
-    return this.updateCart(cart)
-  }
-
-  async getProducts(idCartProduct: IdCartProduct) {
-    const cartId = idCartProduct.cartId;
+  async getCart(userId: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ["cart"]
+    })
+    const cart = user.cart
     return await this.cartRepository.findOne({
-      where: {id: cartId},
-      relations: ['cart_products.product']
+      where: { id: cart.id },
+      relations: ["cart_products.product"]
     });
   }
 }
